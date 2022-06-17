@@ -13,5 +13,5 @@ cd docker
 
 ```bash
 cd ..
-. launch.sh -n <container_name>
+. launch.sh <container_name> <image_tag>
 ```
