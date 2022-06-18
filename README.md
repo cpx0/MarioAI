@@ -19,7 +19,7 @@ cd ..
 ## Train a Mario-playing RL Agent
 
 1. Open http://127.0.0.1:9280 at your browser.
-2. When 'Build Recommended' window pop up, click 'Cancel' button.
+2. When 'Build Recommended' window pops up, click 'Cancel' button.
 3. Open 'Terminal' in 'Launcher'.
 4. Follow commands in the terminal to train a mario-playing rl agent.
 
