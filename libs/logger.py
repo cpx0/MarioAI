@@ -7,11 +7,12 @@ import matplotlib.pyplot as plt
 
 
 class MetricLogger:
-    def __init__(self, save_dir, cfg):
+    def __init__(self, save_dir, args, cfg):
         self.save_log = save_dir / "log"
         with open(self.save_log, "w") as f:
             f.write(
-                f"{cfg}\n"
+                f"Arguments: {args}\n"
+                f"Config: {[{k:v} for k,v in cfg.__dict__.items()]}\n"
                 f"{'Episode':>8}{'Step':>8}{'Epsilon':>10}{'MeanReward':>15}"
                 f"{'MeanLength':>15}{'MeanLoss':>15}{'MeanQValue':>15}"
                 f"{'TimeDelta':>15}{'Time':>20}\n"
@@ -23,6 +24,7 @@ class MetricLogger:
 
         # 指標の履歴
         self.ep_rewards = []
+        # length: the number of sequential bytes to read
         self.ep_lengths = []
         self.ep_avg_losses = []
         self.ep_avg_qs = []
