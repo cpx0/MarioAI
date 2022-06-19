@@ -2,30 +2,24 @@
 # -*- coding: utf-8 -*-
 
 import torch
-from torch import nn
 from torchvision import transforms as T
 import numpy as np
-from pathlib import Path
-from collections import deque
-import random, datetime, os, copy
+import os, copy
 
 # Gymは、Open AIのRL用ツールキットです
 import gym
 from gym.spaces import Box
-from gym.wrappers import FrameStack
-
-# OpenAI Gym用に使うNES エミュレーター
-from nes_py.wrappers import JoypadSpace
-
-#OpenAI Gymのスーパー・マリオ・ブラザーズの環境
-import gym_super_mario_bros
-
 
 class SkipFrame(gym.Wrapper):
     def __init__(self, env, skip):
         """スキップした後のフレームのみを返す"""
         super().__init__(env)
         self._skip = skip
+        self.last_x_pos = 0
+        self.last_y_pos = 0
+        self.last_score = 0
+        self.last_coins = 0
+        self.Last_status = 0
 
     def step(self, action):
         """行動を繰り返し、報酬を合計する"""
@@ -34,10 +28,43 @@ class SkipFrame(gym.Wrapper):
         for i in range(self._skip):
             # 報酬を蓄積し、同じ行動を繰り返す
             obs, reward, done, info = self.env.step(action)
-            total_reward += reward
+            total_reward += reward + \
+                add_reward(info, self.last_x_pos, self.last_y_pos,
+                            self.last_score, self.last_coins, self.Last_status)
+            self.update_last_info(info)
             if done:
                 break
         return obs, total_reward, done, info
+    
+    def update_last_info(self, curr_info):
+        self.last_x_pos = curr_info["x_pos"]
+        self.last_y_pos = curr_info["y_pos"]
+        self.last_score = curr_info["score"]
+        self.last_coins = curr_info["coins"]
+        self.Last_status = curr_info["status"]
+
+
+def add_reward(curr_info, last_x, last_y, last_score, last_coins, last_status):
+    x_reward = -1 if abs(curr_info["x_pos"] - last_x) < 2 else 0
+    y_reward = -0.5 if abs(curr_info["y_pos"] - last_y) < 2 else 0
+    score_reward = 0.5 if curr_info["score"] > last_score else 0
+    coins_reward = 0.5 if curr_info["coins"] > last_coins else 0
+    if last_status == "fireball":
+        if curr_info["status"] == "tall":
+            status_reward = -0.5
+    elif last_status == "tall":
+        if curr_info["status"] == "small":
+            status_reward = -0.5
+        elif curr_info["status"] == "fireball":
+            status_reward = 0.5
+    else:
+        if curr_info["status"] == "fireball":
+            status_reward = 1
+        elif curr_info["status"] == "tall":
+            status_reward = 0.5
+        else:
+            status_reward = 0
+    return x_reward + y_reward + score_reward + coins_reward + status_reward
 
 
 class GrayScaleObservation(gym.ObservationWrapper):
@@ -76,3 +103,4 @@ class ResizeObservation(gym.ObservationWrapper):
         )
         observation = transforms(observation).squeeze(0)
         return observation
+
