@@ -1,3 +1,7 @@
 #!/usr/bin/bash
 
-docker build -t dm_control:1.2 .
+tag=${1:-"1.2"}
+
+echo "docker image 'dm_control:$tag'"
+
+docker build -t dm_control:$tag .
