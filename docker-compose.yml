@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  gym_pytorch:
+    # build: ./docker
+    image: dm_control:1.1
+    container_name: mario_ai
+    shm_size: 32gb
+    stdin_open: true
+    tty: true
+    user: cpx0
+    command: /bin/bash
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+          # - driver: nvidia
+          #   device_ids: ['0', '1']
+          #   capabilities: [gpu]
+    environment:
+      - DISPLAY=$DISPLAY
+    expose:
+      - "2980"
+      - "8008"
+    ports:
+      - "9280:2980"
+      - "8008:8008"
+    volumes:
+      - $PWD:/home/cpx0/workspace
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    working_dir: /home/cpx0/workspace
+  # test:
+  #   image: tensorflow/tensorflow:latest-gpu-py3-jupyter
+  #   command: python -c "import tensorflow as tf;tf.test.gpu_device_name()"
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #         - driver: nvidia
+  #           device_ids: ['0', '1']
+  #           capabilities: [gpu]
+
