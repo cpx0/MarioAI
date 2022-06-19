@@ -4,11 +4,9 @@
 import torch
 from torch import nn
 from torchvision import transforms as T
-from PIL import Image
 import numpy as np
 from pathlib import Path
-from collections import deque
-import random, datetime, os, copy
+import random, datetime, os, argparse
 
 # Gymは、Open AIのRL用ツールキットです
 import gym
@@ -23,28 +21,36 @@ import gym_super_mario_bros
 
 # Import the SIMPLIFIED controls
 from gym.spaces import Box
-from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
-from gym_super_mario_bros.actions import COMPLEX_MOVEMENT
+# from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
+# from gym_super_mario_bros.actions import COMPLEX_MOVEMENT
 
-from envs import SkipFrame, GrayScaleObservation, ResizeObservation
 from cfgs import cfg_factory
+from envs import SkipFrame, GrayScaleObservation, ResizeObservation
 from libs.agents import agent_factory
 from libs.logger import MetricLogger
 
 
 def parse_args():
     parse = argparse.ArgumentParser()
+    parse.add_argument('--local_rank', dest='local_rank', type=int, default=1,)
     # parse.add_argument('--port', dest='port', type=int, default=2980,)
-    parse.add_argument('--agent', dest='agent', type=str, default='mario',)
-    parse.add_argument('--model', dest='model', type=str, default='mario',)
+    parse.add_argument('--agent', dest='agent', type=str, default='swim',)
     parse.add_argument('--finetune-from', type=str, default=None,)
     return parse.parse_args()
 
-args = parse_args()
-cfg = cfg_factory[args.agent]
+
+def set_random_seed(torch_seed, np_seed, rand_seed):
+    ## fix all random seeds
+    torch.manual_seed(torch_seed)
+    torch.cuda.manual_seed(torch_seed)
+    np.random.seed(np_seed)
+    random.seed(rand_seed)
+    torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.benchmark = True
+    # torch.multiprocessing.set_sharing_strategy('file_system')
 
 
-def train():
+def train(cfg):
     # スーパー・マリオの環境を初期化
     env = gym_super_mario_bros.make(cfg.stage_name)
 
@@ -52,7 +58,7 @@ def train():
     #   0. 右に歩く
     #   1. 右方向にジャンプ
     # env = JoypadSpace(env, [["right"], ["right", "A"]])
-    env = JoypadSpace(env, COMPLEX_MOVEMENT)
+    env = JoypadSpace(env, cfg.movement)
 
     env.reset()
     next_state, reward, done, info = env.step(action=0)
@@ -64,17 +70,14 @@ def train():
     env = ResizeObservation(env, shape=cfg.resize_shape)
     env = FrameStack(env, num_stack=cfg.stack_frame_numb)
 
-    use_cuda = torch.cuda.is_available()
-    print(f"Using CUDA: {use_cuda}\n")
-
     save_dir = Path("checkpoints") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     save_dir.mkdir(parents=True)
 
-    mario = Mario(state_dim=(4, cfg.resize_shape, cfg.resize_shape), action_dim=env.action_space.n, save_dir=save_dir)
+    mario = agent_factory[cfg.agent_type](state_dim=(cfg.stack_frame_numb, cfg.resize_shape, cfg.resize_shape), action_dim=env.action_space.n, save_dir=save_dir, cfg=cfg)
 
-    logger = MetricLogger(save_dir)
+    logger = MetricLogger(save_dir, cfg)
 
-    episodes = cfg.n_episodes # 元々は10でしたが、日本語版では少し伸ばしてみましょう。5分程度かかります
+    episodes = cfg.n_episodes
     for e in range(episodes):
 
         state = env.reset()
@@ -101,3 +104,23 @@ def train():
 
         if e % 20 == 0:
             logger.record(episode=e, epsilon=mario.exploration_rate, step=mario.curr_step)
+
+
+def main():
+    args = parse_args()
+    cfg = cfg_factory[args.agent]
+    set_random_seed(cfg.torch_seed, cfg.np_seed, cfg.rand_seed)
+    use_cuda = torch.cuda.is_available()
+    print(f"Using CUDA: {use_cuda}")
+    # torch.cuda.set_device(args.local_rank) if use_cuda else None
+    # dist.init_process_group(
+    #     backend='nccl',
+    #     init_method='tcp://127.0.0.1:{}'.format(args.port),
+    #     world_size=torch.cuda.device_count(),
+    #     rank=args.local_rank
+    # )
+    train(cfg)
+
+
+if __name__ == "__main__":
+    main()
