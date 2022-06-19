@@ -50,7 +50,7 @@ class Mario:
         self.exploration_rate_min = 0.1
         self.curr_step = 0
 
-        self.save_every = 5e5  #  Netを保存するまでの実験ステップの数です
+        self.save_every = cfg.save_every_n_step  #  Netを保存するまでの実験ステップの数です
 
     def act(self, state):
         """
@@ -93,9 +93,9 @@ class Mario(Mario):  # さきほどのクラスのサブクラスとなってい
         self.gamma = cfg.gamma
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=cfg.learning_rate)
         self.loss_fn = torch.nn.SmoothL1Loss()
-        self.burnin = cfg.burnin  # 経験を訓練させるために最低限必要なステップ数
-        self.learn_every = cfg.learn_every  # Q_onlineを更新するタイミングを示すステップ数
-        self.sync_every = cfg.sync_every  # Q_target & Q_onlineを同期させるタイミングを示すステップ数
+        self.burnin = cfg.burnin_n_step  # 経験を訓練させるために最低限必要なステップ数
+        self.learn_every = cfg.learn_every_n_step  # Q_onlineを更新するタイミングを示すステップ数
+        self.sync_every = cfg.sync_every_n_step  # Q_target & Q_onlineを同期させるタイミングを示すステップ数
 
     def cache(self, state, next_state, action, reward, done):
         """
