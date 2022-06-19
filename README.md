@@ -2,18 +2,18 @@
 
 ## Build the RL Environment with Docker
 
-### Build: Docker Image 'dm_control:1.1'
+### Build: Docker Image 'dm_control:1.2'
 
 ```bash
 cd docker
-. build.sh
+./build.sh
 ```
 
-### Run: Docker Container 'mario_ai'
+### Launch: Docker Container 'mario_ai'
 
 ```bash
 cd ..
-. launch.sh mario_ai
+./launch.sh
 ```
 
 ## Train a Mario-playing RL Agent
@@ -25,7 +25,12 @@ cd ..
 
 ```bush
 cd ~/workspace
-python train.py
+sudo python train.py
 ```
 
+## Play Mario with a Trained RL Agent
 
+```bush
+cd ~/workspace
+sudo python demo.py
+```

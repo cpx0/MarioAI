@@ -7,7 +7,7 @@ echo "Usage: $CMDNAME container_name image_tag"
 
 container=${1:-"mario_ai"}
 host_port=${2:-"9280"}
-tag=${3:-"1.1"}
+tag=${3:-"1.2"}
 
 echo "docker container name: $container"
 echo "docker host port for JupyterLab: $host_port"

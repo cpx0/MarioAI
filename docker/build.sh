@@ -1,3 +1,3 @@
 #!/usr/bin/bash
 
-docker build -t dm_control:1.1 .
+docker build -t dm_control:1.2 .
