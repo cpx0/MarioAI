@@ -66,6 +66,7 @@ googleapis-common-protos==1.53.0
 grpc-google-iam-v1==0.12.3
 grpcio==1.42.0
 gym==0.21.0
+gym-super-mario-bros==7.3.0
 h11==0.12.0
 httplib2==0.20.2
 ibm-cos-sdk==2.11.0
@@ -173,7 +174,10 @@ tensorboard-plugin-wit==1.8.1
 terminado==0.12.1
 testpath==0.5.0
 tomli==1.2.2
-torch==1.11.0
+torch==1.11.0+cu113
+torchvision==0.12.0+cu113
+# package location
+--find-links https://download.pytorch.org/whl/torch_stable.html
 tornado==6.1
 tqdm==4.64.0
 traitlets==5.1.1
@@ -189,3 +193,7 @@ widgetsnbextension==3.5.2
 wrapt==1.13.3
 xgboost==1.5.1
 zipp==3.6.0
+
+# https://download.pytorch.org/whl/cu113/torch_stable.html 
+# https://download.pytorch.org/whl/cu113/torch-1.11.0%2Bcu113-cp38-cp38-linux_x86_64.whl
+# https://download.pytorch.org/whl/cu113/torchvision-0.11.0%2Bcu113-cp38-cp38-linux_x86_64.whl
