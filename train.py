@@ -32,25 +32,25 @@ from libs.logger import MetricLogger
 
 def parse_args():
     parse = argparse.ArgumentParser()
-    parse.add_argument('--local_rank', dest='local_rank', type=int, default=1,)
+    parse.add_argument('--local-rank', dest='local_rank', type=int, default=1,)
     # parse.add_argument('--port', dest='port', type=int, default=2980,)
     parse.add_argument('--agent', dest='agent', type=str, default='swim',)
-    parse.add_argument('--finetune-from', type=str, default=None,)
+    parse.add_argument('--finetune-from', dest='finetune_from', type=str, default=None,)
     return parse.parse_args()
 
 
-def set_random_seed(torch_seed, np_seed, rand_seed):
+def set_random_seed(torch_seed, np_seed, random_seed):
     ## fix all random seeds
     torch.manual_seed(torch_seed)
     torch.cuda.manual_seed(torch_seed)
     np.random.seed(np_seed)
-    random.seed(rand_seed)
+    random.seed(random_seed)
     torch.backends.cudnn.deterministic = True
     # torch.backends.cudnn.benchmark = True
     # torch.multiprocessing.set_sharing_strategy('file_system')
 
 
-def train(cfg):
+def train(args, cfg):
     # スーパー・マリオの環境を初期化
     env = gym_super_mario_bros.make(cfg.stage_name)
 
@@ -73,9 +73,14 @@ def train(cfg):
     save_dir = Path("checkpoints") / datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
     save_dir.mkdir(parents=True)
 
-    mario = agent_factory[cfg.agent_type](state_dim=(cfg.stack_frame_numb, cfg.resize_shape, cfg.resize_shape), action_dim=env.action_space.n, save_dir=save_dir, cfg=cfg)
+    mario = agent_factory[cfg.agent_type](
+        state_dim=(cfg.stack_frame_numb, cfg.resize_shape, cfg.resize_shape), 
+        action_dim=env.action_space.n, save_dir=save_dir, cfg=cfg
+    )
 
-    logger = MetricLogger(save_dir, cfg)
+    mario.load(chkpt_path=args.finetune_from) if args.finetune_from else None
+
+    logger = MetricLogger(save_dir, args, cfg)
 
     episodes = cfg.n_episodes
     for e in range(episodes):
@@ -109,7 +114,7 @@ def train(cfg):
 def main():
     args = parse_args()
     cfg = cfg_factory[args.agent]
-    set_random_seed(cfg.torch_seed, cfg.np_seed, cfg.rand_seed)
+    set_random_seed(cfg.torch_seed, cfg.np_seed, cfg.random_seed)
     use_cuda = torch.cuda.is_available()
     print(f"Using CUDA: {use_cuda}")
     # torch.cuda.set_device(args.local_rank) if use_cuda else None
@@ -119,7 +124,7 @@ def main():
     #     world_size=torch.cuda.device_count(),
     #     rank=args.local_rank
     # )
-    train(cfg)
+    train(args, cfg)
 
 
 if __name__ == "__main__":
