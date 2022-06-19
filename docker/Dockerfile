@@ -132,5 +132,6 @@ ENV PYOPENGL_PLATFORM osmesa
 # Configure container startup
 EXPOSE 2980
 USER cpx0
+WORKDIR $HOME
 ENTRYPOINT ["tini", "--"]
 CMD ["sh","-c", "jupyter lab --notebook-dir=/home/${USERNAME} --ip=0.0.0.0 --no-browser --allow-root --port=2980 --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*' --NotebookApp.base_url=${NB_PREFIX}"]
