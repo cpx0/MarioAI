@@ -4,21 +4,22 @@ FROM nvcr.io/nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
 # ENV http_proxy "http://proxy..."
 
 ARG TF_SERVING_VERSION=0.0.0
-ARG NB_USER=cpx0
+ARG USERNAME=cpx0
 
-# TODO: User should be refactored instead of hard coded jovyan
+# TODO: User should be refactored instead of hard coded cpx0
 
 USER root
 
 ENV DEBIAN_FRONTEND noninteractive
 
-ENV NB_USER $NB_USER
-
-ENV NB_UID 1000
-ENV HOME /home/$NB_USER
+ENV USERNAME $USERNAME
+ENV GROUPNAME dm_users
+ENV UID 1000
+ENV GID 1000
+ENV HOME /home/$USERNAME
 ENV NB_PREFIX /
 ENV PATH $HOME/.local/bin:$PATH
-
+ENV TIMEZONE=Asia/Toyko
 
 # Use bash instead of sh
 SHELL ["/bin/bash", "-c"]
@@ -68,13 +69,23 @@ ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 
-# Create NB_USER user with UID=1000 and in the 'users' group
-# but allow for non-initial launches of the notebook to have
-# $HOME provided by the contents of a PV
-RUN useradd -M -s /bin/bash -N -u $NB_UID $NB_USER && \
-  chown -R ${NB_USER}:users /usr/local/bin && \
+# # Create USERNAME user with UID=1000 and in the 'users' group
+# # but allow for non-initial launches of the notebook to have
+# # $HOME provided by the contents of a PV
+# RUN useradd -M -s /bin/bash -N -u $UID $USERNAME && \
+#   chown -R ${USERNAME}:users /usr/local/bin && \
+#   mkdir -p $HOME && \
+#   chown -R ${USERNAME}:users ${HOME}
+
+RUN groupadd -g ${GID} ${GROUPNAME} && \
+  useradd -m -s /bin/bash -g ${GROUPNAME} -G sudo -u ${UID} ${USERNAME} && \
+  chmod u+w /etc/sudoers && \
+  echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+  chmod -w /etc/sudoers && \
+  echo "" > /etc/bash.bashrc && \
+  chown -R ${USERNAME}:users /usr/local/bin && \
   mkdir -p $HOME && \
-  chown -R ${NB_USER}:users ${HOME}
+  chown -R ${USERNAME}:users ${HOME}
 
 # Install Tini - used as entrypoint for container
 RUN cd /tmp && \
@@ -110,6 +121,9 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
   && apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
+RUN ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime && \
+  echo $TIMEZONE > /etc/timezone
+
 ## Set ENV for dm_control
 ENV MUJOCO_GL osmesa
 ENV PYOPENGL_PLATFORM osmesa
@@ -119,4 +133,4 @@ ENV PYOPENGL_PLATFORM osmesa
 EXPOSE 2980
 USER cpx0
 ENTRYPOINT ["tini", "--"]
-CMD ["sh","-c", "jupyter lab --notebook-dir=/home/${NB_USER} --ip=0.0.0.0 --no-browser --allow-root --port=2980 --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*' --NotebookApp.base_url=${NB_PREFIX}"]
+CMD ["sh","-c", "jupyter lab --notebook-dir=/home/${USERNAME} --ip=0.0.0.0 --no-browser --allow-root --port=2980 --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*' --NotebookApp.base_url=${NB_PREFIX}"]
