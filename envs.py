@@ -29,7 +29,7 @@ class SkipFrame(gym.Wrapper):
             # 報酬を蓄積し、同じ行動を繰り返す
             obs, reward, done, info = self.env.step(action)
             total_reward += reward + \
-                add_reward(info, self.last_x_pos, self.last_y_pos,
+                add_reward(action, info, self.last_x_pos, self.last_y_pos,
                             self.last_score, self.last_coins, self.Last_status)
             self.update_last_info(info)
             if done:
@@ -44,9 +44,11 @@ class SkipFrame(gym.Wrapper):
         self.Last_status = curr_info["status"]
 
 
-def add_reward(curr_info, last_x, last_y, last_score, last_coins, last_status):
-    x_reward = -1 if abs(curr_info["x_pos"] - last_x) < 2 else 0
-    y_reward = -0.5 if abs(curr_info["y_pos"] - last_y) < 2 else 0
+def add_reward(action, curr_info, last_x, last_y, last_score, last_coins, last_status):
+    # give a penalty when an agent acting to go right(1,2,3,4) or left(6,7,8,9) cannot move
+    x_stay_penalty = -1 if abs(curr_info["x_pos"] - last_x) == 0 and action > 0 and action < 5 \
+                        or abs(curr_info["x_pos"] - last_x) == 0 and action > 5 and action < 10 else 0
+    # y_stay_penalty = -0.5 if abs(curr_info["y_pos"] - last_y) < 2 else 0
     score_reward = 0.5 if curr_info["score"] > last_score else 0
     coins_reward = 0.5 if curr_info["coins"] > last_coins else 0
     if last_status == "fireball":
@@ -64,7 +66,8 @@ def add_reward(curr_info, last_x, last_y, last_score, last_coins, last_status):
             status_reward = 0.5
         else:
             status_reward = 0
-    return x_reward + y_reward + score_reward + coins_reward + status_reward
+    # return x_stay_penalty + y_stay_penalty + score_reward + coins_reward + status_reward
+    return x_stay_penalty + score_reward + coins_reward + status_reward
 
 
 class GrayScaleObservation(gym.ObservationWrapper):
