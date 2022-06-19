@@ -15,6 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: ./docker/build.sh
+      run: cd docker && \
+          ./build.sh 
     - name: Build the Docker container
       run: ./launch.sh
