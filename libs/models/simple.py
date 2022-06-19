@@ -4,7 +4,7 @@
 import torch
 from torch import nn
 from torchvision import transforms as T
-import random, datetime, os, copy
+import copy
 
 
 class MarioNet(nn.Module):

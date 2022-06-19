@@ -5,5 +5,5 @@ from .simple import MarioNet
 
 
 model_factory = {
-    'mario': MarioNet,
+    'simple': MarioNet,
 }

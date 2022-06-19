@@ -4,28 +4,10 @@
 import torch
 from torch import nn
 import numpy as np
-from pathlib import Path
 from collections import deque
-import random, datetime, os, copy
+import random, os
 
-# Gymは、Open AIのRL用ツールキットです
-import gym
-from gym.spaces import Box
-from gym.wrappers import FrameStack
-
-# OpenAI Gym用に使うNES エミュレーター
-from nes_py.wrappers import JoypadSpace
-
-#OpenAI Gymのスーパー・マリオ・ブラザーズの環境
-import gym_super_mario_bros
-
-# Import the SIMPLIFIED controls
-from gym.spaces import Box
-from gym_super_mario_bros.actions import SIMPLE_MOVEMENT
-from gym_super_mario_bros.actions import COMPLEX_MOVEMENT
-
-from ..cfgs import cfg_factory
-from .models import model_factory
+from libs.models import model_factory
 
 
 class Mario:
@@ -50,20 +32,21 @@ class Mario:
 
 
 class Mario:
-    def __init__(self, state_dim, action_dim, save_dir):
+    def __init__(self, state_dim, action_dim, save_dir, cfg):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.save_dir = save_dir
+        self.cfg = cfg
 
         self.use_cuda = torch.cuda.is_available()
 
         # 最適な行動を予測するマリオ用のDNNです。「訓練」セクションで実装します
-        self.net = MarioNet(self.state_dim, self.action_dim).float()
+        self.net = model_factory[self.cfg.model_type](self.state_dim, self.action_dim).float()
         if self.use_cuda:
             self.net = self.net.to(device="cuda")
 
         self.exploration_rate = 1
-        self.exploration_rate_decay = 0.99999975
+        self.exploration_rate_decay = cfg.exploration_rate_decay
         self.exploration_rate_min = 0.1
         self.curr_step = 0
 
@@ -103,16 +86,16 @@ class Mario:
 
 
 class Mario(Mario):  # さきほどのクラスのサブクラスとなっています
-    def __init__(self, state_dim, action_dim, save_dir):
-        super().__init__(state_dim, action_dim, save_dir)
-        self.memory = deque(maxlen=100000)
-        self.batch_size = 32
-        self.gamma = 0.9
-        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=0.00025)
+    def __init__(self, state_dim, action_dim, save_dir, cfg):
+        super().__init__(state_dim, action_dim, save_dir, cfg)
+        self.memory = deque(maxlen=cfg.deque_size)
+        self.batch_size = cfg.batch_size
+        self.gamma = cfg.gamma
+        self.optimizer = torch.optim.Adam(self.net.parameters(), lr=cfg.learning_rate)
         self.loss_fn = torch.nn.SmoothL1Loss()
-        self.burnin = 1e4  # 経験を訓練させるために最低限必要なステップ数
-        self.learn_every = 3  # Q_onlineを更新するタイミングを示すステップ数
-        self.sync_every = 1e4  # Q_target & Q_onlineを同期させるタイミングを示すステップ数
+        self.burnin = cfg.burnin  # 経験を訓練させるために最低限必要なステップ数
+        self.learn_every = cfg.learn_every  # Q_onlineを更新するタイミングを示すステップ数
+        self.sync_every = cfg.sync_every  # Q_target & Q_onlineを同期させるタイミングを示すステップ数
 
     def cache(self, state, next_state, action, reward, done):
         """
@@ -186,10 +169,15 @@ class Mario(Mario):  # さきほどのクラスのサブクラスとなってい
         )
         print(f"MarioNet saved to {save_path} at step {self.curr_step}")
 
-    def load(self, ckpt_path):
-        self.net.load_state_dict(torch.load(ckpt_path)["model"])
-        self.exploration_rate = torch.load(ckpt_path)["exploration_rate"]
-        print(f"MarioNet loaded from {ckpt_path}")
+    def load(self, chkpt_path):
+        self.net.load_state_dict(torch.load(chkpt_path)["model"])
+        self.exploration_rate = torch.load(chkpt_path)["exploration_rate"]
+        print(f"MarioNet loaded from {chkpt_path}")
+    
+    def load_target(self, chkpt_path):
+        self.net.load_state_dict(torch.load(chkpt_path)["model"])
+        self.exploration_rate = 0.0
+        print(f"MarioNet loaded from {chkpt_path}")
 
     def learn(self):
         if self.curr_step % self.sync_every == 0:

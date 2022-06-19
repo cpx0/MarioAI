@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .mario import Mario
+from .mario import Mario as Swimmer
 
 
 agent_factory = {
-    'mario': Mario,
+    'swim': Swimmer,
 }
