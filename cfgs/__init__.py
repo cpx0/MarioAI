@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .config import cfg as mario_cfg
+from .swim import cfg as swim_cfg
 
 
 class cfg_dict(object):
@@ -11,5 +11,5 @@ class cfg_dict(object):
 
 
 cfg_factory = dict(
-    mario=cfg_dict(mario_cfg),
+    swim = cfg_dict(swim_cfg),
 )
