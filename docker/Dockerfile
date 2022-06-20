@@ -121,6 +121,7 @@ RUN apt-get update && apt-get install -yq --no-install-recommends \
   && apt-get clean && \
   rm -rf /var/lib/apt/lists/*
 
+# Time Zone
 RUN ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime && \
   echo $TIMEZONE > /etc/timezone
 

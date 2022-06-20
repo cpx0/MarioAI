@@ -1,7 +1,17 @@
 # Mario AI: Train a Mario-playing RL Agent
 
-## Build the RL Environment with Docker
 ![docker image_ci workflow](https://github.com/cpx0/MarioAI/actions/workflows/docker-image.yml/badge.svg)
+
+## Git Clone this Repository
+
+```bash
+cd $YOUR_WORKSPACE$
+git clone https://github.com/cpx0/MarioAI.git
+cd ./MarioAI
+chmod +x docker/build.sh docker/Dockerfile ./launch.sh ./docker-compose.yml
+```
+
+## Build the RL Environment with Docker
 
 ### Build: Docker Image 'dm_control:1.2'
 
