@@ -20,7 +20,7 @@ from libs.agents import agent_factory
 # chkpt_name = "mario_net_8.chkpt"
 
 # カラー画像表示用の環境
-def display_color_image(cfg: dict, checkpoint_dir: Path, chkpt_name: str):
+def display_color_image(cfg: dict, checkpoint_path: Path):
 
     env = gym_super_mario_bros.make(cfg.stage_name)
     env = JoypadSpace(env, cfg.movement)
@@ -52,8 +52,7 @@ def display_color_image(cfg: dict, checkpoint_dir: Path, chkpt_name: str):
 
     mario = agent_factory[cfg.agent_type](state_dim=(cfg.stack_frame_numb, cfg.resize_shape, cfg.resize_shape), action_dim=env.action_space.n, save_dir=None, cfg=cfg)
 
-    chkpt_path = checkpoint_dir / chkpt_name
-    mario.load_target(chkpt_path=chkpt_path)
+    mario.load_target(chkpt_path=checkpoint_path)
 
     # ゲーム開始！
     while True:
@@ -98,32 +97,32 @@ def display_color_image(cfg: dict, checkpoint_dir: Path, chkpt_name: str):
 
 
 # 白黒での学習に使用した画像による、動画を表示
-def display_grayscale_movie(img: list, cfg: dict, save_dir: Path, chkpt_name: str):
+def display_grayscale_movie(img: list, cfg: dict, save_path: Path):
     dpi = 72
     interval = 50 # ms
+    save_dir, chkpt_name = save_path.parent, save_path.stem
     plt.figure(figsize=(240/dpi,256/dpi),dpi=dpi)  # 修正
-
     patch = plt.imshow(img[0])
     plt.axis=('off')
     animate = lambda i: patch.set_data(img[i])
     ani = animation.FuncAnimation(plt.gcf(),animate,frames=len(img),interval=interval)
-    ani.save(save_dir / ("action_" + chkpt_name.replace('.chkpt', '') + "_stage-" + \
+    ani.save(save_dir / ("action_" + str(chkpt_name) + "_stage-" + \
         cfg.stage_name.replace('SuperMarioBros-', '') + "_grayscale.gif"), writer='pillow')
     # display.HTML(ani.to_jshtml())
     plt.close()
 
 
 # カラーでの動画を表示
-def display_color_movie(img_color: list, cfg: dict, save_dir: Path, chkpt_name: str):
+def display_color_movie(img_color: list, cfg: dict, save_path: Path):
     dpi = 72
     interval = 50 # ms
-
+    save_dir, chkpt_name = save_path.parent, save_path.stem
     plt.figure(figsize=(240/dpi,256/dpi),dpi=dpi)  # 修正
     patch = plt.imshow(img_color[0])
     plt.axis=('off')
     animate = lambda i: patch.set_data(img_color[i])
     ani = animation.FuncAnimation(plt.gcf(),animate,frames=len(img_color),interval=interval)
-    ani.save(save_dir / ("action_" + chkpt_name.replace('.chkpt', '') + "_stage-" + \
+    ani.save(save_dir / ("action_" + str(chkpt_name) + "_stage-" + \
         cfg.stage_name.replace('SuperMarioBros-', '') + "_color.gif"), writer='pillow')
     # display.HTML(ani.to_jshtml())
     plt.close()
