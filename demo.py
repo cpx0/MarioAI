@@ -16,7 +16,7 @@ def main():
     chkpt_path = Path(args.finetune_from) if args.finetune_from \
         else Path("checkpoints") / "2022-06-18T16-35-14" / "mario_net_9.chkpt"
     img, img_color = display_color_image(cfg, chkpt_path)
-    display_grayscale_movie(img, cfg, chkpt_path)
+    # display_grayscale_movie(img, cfg, chkpt_path)
     display_color_movie(img_color, cfg, chkpt_path)
 
 if __name__ == "__main__":
