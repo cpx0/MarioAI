@@ -50,22 +50,15 @@ def add_reward(action, curr_info, last_x, last_y, last_score, last_coins, last_s
                         or abs(curr_info["x_pos"] - last_x) == 0 and action > 5 and action < 10 else 0
     # y_stay_penalty = -0.5 if abs(curr_info["y_pos"] - last_y) < 2 else 0
     score_reward = 0.5 if curr_info["score"] > last_score else 0
-    coins_reward = 0.5 if curr_info["coins"] > last_coins else 0
+    # When getting coins, Mario get score, too. 
+    # So, when getting coins, an adding reward is (score_reward + coins_reward).
+    coins_reward = 0.25 if curr_info["coins"] > last_coins else 0
     if last_status == "fireball":
-        if curr_info["status"] == "tall":
-            status_reward = -0.5
+        status_reward = -0.5 if curr_info["status"] == "tall" or curr_info["status"] == "small" else 0
     elif last_status == "tall":
-        if curr_info["status"] == "small":
-            status_reward = -0.5
-        elif curr_info["status"] == "fireball":
-            status_reward = 0.5
+        status_reward = -0.5 if curr_info["status"] == "small" else (0.5 if curr_info["status"] == "fireball" else 0)
     else:
-        if curr_info["status"] == "fireball":
-            status_reward = 1
-        elif curr_info["status"] == "tall":
-            status_reward = 0.5
-        else:
-            status_reward = 0
+        status_reward = 0.5 if curr_info["status"] == "fireball" or curr_info["status"] == "tall" else 0
     # return x_stay_penalty + y_stay_penalty + score_reward + coins_reward + status_reward
     return x_stay_penalty + score_reward + coins_reward + status_reward
 

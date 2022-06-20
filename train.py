@@ -99,6 +99,10 @@ def train(args, cfg):
             q, loss = mario.learn()
             # ログ保存
             logger.log_step(reward, loss, q)
+            if mario.curr_step % mario.save_every == 0:
+                logger.record_saved_network(
+                    episode=e, epsilon=mario.exploration_rate, step=mario.curr_step,
+                    save_every=mario.save_every, saved_dir=mario.save_dir)
             # 状態の更新
             state = next_state
             # ゲームが終了したかどうかを確認
