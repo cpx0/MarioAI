@@ -45,9 +45,9 @@ class Mario:
         if self.use_cuda:
             self.net = self.net.to(device="cuda")
 
-        self.exploration_rate = 1
+        self.exploration_rate = cfg.exploration_rate_init
         self.exploration_rate_decay = cfg.exploration_rate_decay
-        self.exploration_rate_min = 0.1
+        self.exploration_rate_min = cfg.exploration_rate_min
         self.curr_step = 0
 
         self.save_every = cfg.save_every_n_step  #  Netを保存するまでの実験ステップの数です
