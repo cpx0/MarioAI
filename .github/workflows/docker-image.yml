@@ -16,5 +16,5 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build the Docker image
       run: docker build -t dm_control:1.2 ./docker
-    - name: Build the Docker container
+    - name: Launch the Docker container
       run: docker run -i --rm --name mario_ai -p 9280:2980 -v $(pwd):/home/cpx0/workspace -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix:10.0 dm_control:1.2 pwd
