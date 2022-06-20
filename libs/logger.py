@@ -109,3 +109,10 @@ class MetricLogger:
             plt.plot(getattr(self, f"moving_avg_{metric}"))
             plt.savefig(getattr(self, f"{metric}_plot"))
             plt.clf()
+    
+    def record_saved_network(self, episode, epsilon, step, save_every, saved_dir):
+        with open(self.save_log, "a") as f:
+            f.write(
+                f"MarioNet saved to {saved_dir}/mario_net_{int(step // save_every)}.chkpt "
+                f"at step {step}, episode {episode}\n"
+            )
