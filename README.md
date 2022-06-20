@@ -5,7 +5,9 @@
 ## Git Clone this Repository
 
 ```bash
-cd $YOUR_WORKSPACE$
+cd $YOUR_WORKSPACE
+```
+```bash
 git clone https://github.com/cpx0/MarioAI.git
 cd ./MarioAI
 chmod +x docker/build.sh docker/Dockerfile ./launch.sh ./docker-compose.yml
