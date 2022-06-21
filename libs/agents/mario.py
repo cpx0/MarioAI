@@ -5,7 +5,7 @@ import torch
 from torch import nn
 import numpy as np
 from collections import deque
-import random, os
+import random
 
 from libs.models import model_factory
 
@@ -174,10 +174,10 @@ class Mario(Mario):  # さきほどのクラスのサブクラスとなってい
         self.exploration_rate = torch.load(chkpt_path)["exploration_rate"]
         print(f"MarioNet loaded from {chkpt_path}")
     
-    def load_target(self, chkpt_path):
+    def load_without_exploration(self, chkpt_path):
         self.net.load_state_dict(torch.load(chkpt_path)["model"])
-        self.exploration_rate = 0.0
-        print(f"MarioNet loaded from {chkpt_path}")
+        self.exploration_rate = 0.0     # no use exploration for demo playing
+        print(f"MarioNet loaded from {chkpt_path} without exploration")
 
     def learn(self):
         if self.curr_step % self.sync_every == 0:
