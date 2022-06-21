@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 from matplotlib import animation
+import argparse
 
 from gym.wrappers import FrameStack
 from nes_py.wrappers import JoypadSpace
@@ -16,11 +17,18 @@ import gym_super_mario_bros
 from envs import SkipFrame, GrayScaleObservation, ResizeObservation
 from libs.agents import agent_factory
 
-# checkpoint_dir = Path("checkpoints") / "2022-06-18T16-35-14"
-# chkpt_name = "mario_net_8.chkpt"
+
+def parse_args():
+    parse = argparse.ArgumentParser()
+    parse.add_argument('-l', '--local-rank', dest='local_rank', type=int, default=1,)
+    # parse.add_argument('-p', '--port', dest='port', type=int, default=2980,)
+    parse.add_argument('-a', '--agent', dest='agent', type=str, default='swim',)
+    parse.add_argument('-f', '--finetune-from', dest='finetune_from', type=str, default=None,)
+    parse.add_argument('-e', '--exploration', dest='with_exploration', action='store_true', default=False,)
+    return parse.parse_args()
 
 # カラー画像表示用の環境
-def display_color_image(cfg: dict, checkpoint_path: Path):
+def display_color_image(args: argparse.ArgumentParser, cfg: dict, checkpoint_path: Path):
 
     env = gym_super_mario_bros.make(cfg.stage_name)
     env = JoypadSpace(env, cfg.movement)
@@ -50,9 +58,13 @@ def display_color_image(cfg: dict, checkpoint_path: Path):
     # step数
     num_step = 0
 
-    mario = agent_factory[cfg.agent_type](state_dim=(cfg.stack_frame_numb, cfg.resize_shape, cfg.resize_shape), action_dim=env.action_space.n, save_dir=None, cfg=cfg)
+    mario = agent_factory[cfg.agent_type](
+        state_dim=(cfg.stack_frame_numb, cfg.resize_shape, cfg.resize_shape), 
+        action_dim=env.action_space.n, save_dir=None, cfg=cfg,
+        )
 
-    mario.load_target(chkpt_path=checkpoint_path)
+    mario.load_without_exploration(chkpt_path=checkpoint_path) \
+        if not args.with_exploration else mario.load(chkpt_path=checkpoint_path)
 
     # ゲーム開始！
     while True:

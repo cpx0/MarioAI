@@ -1,6 +1,6 @@
 # Mario AI: Train a Mario-playing RL Agent
 
-![docker image_ci workflow](https://github.com/cpx0/MarioAI/actions/workflows/docker-image.yml/badge.svg)
+[![.github/workflows/docker-image.yml](https://github.com/cpx0/MarioAI/actions/workflows/docker-image.yml/badge.svg)](https://github.com/cpx0/MarioAI/actions/workflows/docker-image.yml)
 
 ## Git Clone this Repository
 
