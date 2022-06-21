@@ -6,7 +6,7 @@ from torch import nn
 from torchvision import transforms as T
 import numpy as np
 from pathlib import Path
-import random, datetime, os, argparse
+import random, datetime
 
 # Gymは、Open AIのRL用ツールキットです
 import gym
@@ -28,15 +28,7 @@ from cfgs import cfg_factory
 from envs import SkipFrame, GrayScaleObservation, ResizeObservation
 from libs.agents import agent_factory
 from libs.logger import MetricLogger
-
-
-def parse_args():
-    parse = argparse.ArgumentParser()
-    parse.add_argument('--local-rank', dest='local_rank', type=int, default=1,)
-    # parse.add_argument('--port', dest='port', type=int, default=2980,)
-    parse.add_argument('--agent', dest='agent', type=str, default='swim',)
-    parse.add_argument('--finetune-from', dest='finetune_from', type=str, default=None,)
-    return parse.parse_args()
+from libs.utils import parse_args
 
 
 def set_random_seed(torch_seed, np_seed, random_seed):
