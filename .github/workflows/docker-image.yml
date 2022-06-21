@@ -14,7 +14,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Change Mode of run files for Docker
+      run: chmod +x docker/build.sh docker/Dockerfile ./launch.sh ./docker-compose.yml
     - name: Build the Docker image
-      run: docker build -t dm_control:1.2 ./docker
+      run: cd ./docker && ./build.sh
     - name: Launch the Docker container
       run: docker run -i --rm --name mario_ai -p 9280:2980 -v $(pwd):/home/cpx0/workspace -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=unix:10.0 dm_control:1.2 pwd
