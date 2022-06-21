@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Change Mode of run files for Docker
-    - run: chmod +x docker/build.sh docker/Dockerfile ./launch.sh ./docker-compose.yml
+      run: chmod +x docker/build.sh docker/Dockerfile ./launch.sh ./docker-compose.yml
     - name: Build the Docker image
       run: ./docker/build.sh
     - name: Launch the Docker container
