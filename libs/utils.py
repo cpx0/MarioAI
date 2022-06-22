@@ -69,17 +69,12 @@ def display_color_image(args: argparse.ArgumentParser, cfg: dict, checkpoint_pat
     # ゲーム開始！
     while True:
         # 現在の状態に対するエージェントの行動を決める
-        # action = mario.act(state)
-        action = mario.act(state)
+        action = mario.act_without_exploration(state) \
+            if not args.with_exploration else mario.act(state)
         # エージェントが行動を実行
         next_state, reward, done, info = env.step(action)
-        
         # 記憶
         mario.cache(state, next_state, action, reward, done)
-        # # 訓練
-        # q, loss = mario.learn()
-        # # ログ保存
-        # logger.log_step(reward, loss, q)
         # 動画化に毎step描画を追加
         display.clear_output(wait=True)
         # grayscaleの画像をRGBの画像に変換

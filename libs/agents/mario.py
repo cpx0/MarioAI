@@ -84,6 +84,30 @@ class Mario:
         self.curr_step += 1
         return action_idx
 
+    def act_without_exploration(self, state):
+        """
+        状態が与えられると、ε-greedy法の探索なし活用のみで行動を選択し、ステップの値を更新します
+
+        Inputs:
+            state(LazyFrame):現在の状態における一つの観測オブジェクトで、(state_dim)次元となります
+        Outputs:
+            action_idx (int): マリオが取る行動を示す整数値です
+        """
+
+        # 活用（EXPLOIT）
+        state = state.__array__()
+        if self.use_cuda:
+            state = torch.tensor(state).cuda()
+        else:
+            state = torch.tensor(state)
+        state = state.unsqueeze(0)
+        action_values = self.net(state, model="online")
+        action_idx = torch.argmax(action_values, axis=1).item()
+
+        # ステップを+1します
+        self.curr_step += 1
+        return action_idx
+
 
 class Mario(Mario):  # さきほどのクラスのサブクラスとなっています
     def __init__(self, state_dim, action_dim, save_dir, cfg):
