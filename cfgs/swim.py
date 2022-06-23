@@ -18,11 +18,13 @@ cfg = dict(
         ['right', 'A', 'B'],
         ['A'],
         ['left'],
-        ['left', 'A'],
-        ['left', 'B'],
-        ['left', 'A', 'B'],
+        # ['left', 'A'],
+        # ['left', 'B'],
+        # ['left', 'A', 'B'],
         ['down'],
-        ['up'],
+        ['down', 'right'],
+        ['down', 'right', 'B'],
+        # ['up'],
     ],
     deque_size = 20000,                     # 100000: CUDAのcacheサイズ
 
